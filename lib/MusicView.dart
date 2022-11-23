@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:music/CommonWidgets.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:text_scroll/text_scroll.dart';
 
 class MusicView extends StatefulWidget {
   const MusicView({Key? key}) : super(key: key);
@@ -23,6 +24,7 @@ class MusicViewState extends State<MusicView> with SingleTickerProviderStateMixi
   List<SongModel> songModelList = [];
   int currentIndex = 0;
   String currentPlaySong = "";
+  String currentPlaySongArtist = "";
 
   late Animation<double> animation;
   late AnimationController animationController;
@@ -60,12 +62,20 @@ class MusicViewState extends State<MusicView> with SingleTickerProviderStateMixi
         currentIndex += 1;
       }
       currentPlaySong = songModelList[currentIndex].displayNameWOExt;
+      currentPlaySongArtist = songModelList[currentIndex].artist!;
       await audioPlayer.play(songModelList[currentIndex].data);
       isAudioPlaying = true;
       setState(() {
 
       });
     });
+
+    animationController = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 7),
+    );
+
+    animationController.repeat();
     // animationController = AnimationController(vsync: this,duration: const Duration(milliseconds: 500));
     // final curvedAnimation = CurvedAnimation(parent: animationController, curve: Curves.ease);
     //
@@ -94,6 +104,8 @@ class MusicViewState extends State<MusicView> with SingleTickerProviderStateMixi
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        backgroundColor: Colors.brown.shade800,
+        elevation: 0,
         leading: Visibility(
           visible: !musicListShown!,
           child: IconButton(
@@ -104,15 +116,31 @@ class MusicViewState extends State<MusicView> with SingleTickerProviderStateMixi
 
                 });
               },
-              icon: const Icon(Icons.arrow_back_rounded)),
+              icon: const Icon(Icons.arrow_drop_down_sharp)),
         ),
         centerTitle: true,
         title: commonWidgets.setTextWithColor("Music Player 2022", 15,Colors.white),
       ),
-      body: Visibility(
-          visible: musicListShown!,
-          replacement: musicPlayerView(),
-          child: musicListView()),
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              Colors.brown.shade800,
+              Colors.brown.shade700,
+              Colors.brown.shade600,
+              Colors.brown.shade500,
+              Colors.brown.shade400,
+              Colors.brown.shade300,
+            ],
+          ),
+        ),
+        child: Visibility(
+            visible: musicListShown!,
+            replacement: musicPlayerView(),
+            child: musicListView()),
+      ),
       bottomNavigationBar: Visibility(
         visible: currentPlaySong != "" && musicListShown!,
         child: GestureDetector(
@@ -124,8 +152,9 @@ class MusicViewState extends State<MusicView> with SingleTickerProviderStateMixi
             });
           },
           child: Container(
+            padding: EdgeInsets.only(left: 10),
             height: 70,
-            color: Colors.blue,
+            color: Colors.brown.shade500,
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -140,6 +169,7 @@ class MusicViewState extends State<MusicView> with SingleTickerProviderStateMixi
                             currentIndex -= 1;
                           }
                           currentPlaySong = songModelList[currentIndex].displayNameWOExt;
+                          currentPlaySongArtist = songModelList[currentIndex].artist!;
                           await audioPlayer.play(songModelList[currentIndex].data);
                           isAudioPlaying = true;
                           setState(() {
@@ -168,6 +198,7 @@ class MusicViewState extends State<MusicView> with SingleTickerProviderStateMixi
                             currentIndex += 1;
                           }
                           currentPlaySong = songModelList[currentIndex].displayNameWOExt;
+                          currentPlaySongArtist = songModelList[currentIndex].artist!;
                           await audioPlayer.play(songModelList[currentIndex].data);
                           isAudioPlaying = true;
                           setState(() {
@@ -209,6 +240,7 @@ class MusicViewState extends State<MusicView> with SingleTickerProviderStateMixi
                   setState(() {
                     currentIndex = index;
                     currentPlaySong = item.data![index].displayNameWOExt;
+                    currentPlaySongArtist = item.data![index].artist!;
                     musicListShown = false;
                     commonWidgets.setBoolean("MusicListShown", false);
                     isAudioPlaying = true;
@@ -216,10 +248,10 @@ class MusicViewState extends State<MusicView> with SingleTickerProviderStateMixi
                   audioPlayer.notificationService;
                   await audioPlayer.play(songModelList[currentIndex].data);
                 },
-                leading: const Icon(Icons.music_note_sharp),
-                title: commonWidgets.setTextWithColor(item.data![index].displayNameWOExt, 15,Colors.blue),
-                subtitle: commonWidgets.setTextWithColor("${item.data![index].artist}", 10, Colors.black),
-                trailing: const Icon(Icons.more_horiz_sharp),
+                leading: const Icon(Icons.music_note_sharp,color: Colors.white),
+                title: commonWidgets.setTextWithColor(item.data![index].displayNameWOExt, 16,Colors.white),
+                subtitle: commonWidgets.setTextWithColor("${item.data![index].artist}", 10, Colors.white),
+                trailing: const Icon(Icons.more_horiz_sharp, color: Colors.white),
               );
             });
       },
@@ -228,7 +260,7 @@ class MusicViewState extends State<MusicView> with SingleTickerProviderStateMixi
 
   Widget musicPlayerView() {
     return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
+      mainAxisAlignment: MainAxisAlignment.start,
       children: [
         imageView(),
         timerView(),
@@ -239,29 +271,47 @@ class MusicViewState extends State<MusicView> with SingleTickerProviderStateMixi
 
   Widget imageView() {
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 15,vertical: 25),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Expanded(child: commonWidgets.setTextWithColor(currentPlaySong,18,Colors.black)),
-                GestureDetector(
-                    onTap: () {
-                      listView();
-                    },
-                    child: commonWidgets.iconContainer(Icons.list_sharp, Colors.black,25))
-              ],
-            )),
-        const Image(image: AssetImage("assests/music.png")),
-        // Container(
-        //     height: MediaQuery.of(context).size.width * 0.8,
-        //     width: MediaQuery.of(context).size.width * 0.8,
-        //     decoration: const BoxDecoration(image: DecorationImage(image: AssetImage("assests/music.png"))),
-        //     child: musicAnimation(),
-        // )
-        /*child: Image(image: const AssetImage("assests/image.jpg"),fit: BoxFit.fitWidth)*/
 
+        AnimatedBuilder(
+          animation: animationController,
+          child:  Container(
+            height: MediaQuery.of(context).size.height * 0.45,
+            width: MediaQuery.of(context).size.width * 0.65,
+            color: Colors.transparent,
+            child: const Image(
+                image: AssetImage("assests/music_background.png"),
+                color: Colors.white,
+                fit: BoxFit.contain),
+          ),
+          builder: (BuildContext context, Widget? _widget) {
+            return Transform.rotate(
+              angle: animationController.value * 6.3,
+              child: _widget,
+            );
+          },
+        ),
+        Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              commonWidgets.setTextWithColorFOntWeight(currentPlaySong, 18, Colors.white),
+               TextScroll(
+                currentPlaySongArtist,
+                mode: TextScrollMode.endless,
+                velocity: Velocity(pixelsPerSecond: Offset(150, 0)),
+                delayBefore: Duration(milliseconds: 50),
+                numberOfReps: 5,
+                pauseBetween: Duration(milliseconds: 50),
+                style: TextStyle(color: Colors.white, fontSize: 15),
+                textAlign: TextAlign.right,
+                selectable: true,
+              )
+            ],
+          ),
+        )
       ],
     );
   }
@@ -296,6 +346,7 @@ class MusicViewState extends State<MusicView> with SingleTickerProviderStateMixi
               setState(() {
                 currentIndex = index;
                 currentPlaySong = songModelList[index].displayNameWOExt;
+                currentPlaySongArtist = songModelList[index].artist!;
                 musicListShown = false;
                 commonWidgets.setBoolean("MusicListShown", false);
                 isAudioPlaying = true;
@@ -318,18 +369,18 @@ class MusicViewState extends State<MusicView> with SingleTickerProviderStateMixi
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          commonWidgets.setTextWithColor(commonWidgets.setTime(position), 12, Colors.black),
+          commonWidgets.setTextWithColor(commonWidgets.setTime(position), 12, Colors.white),
           Expanded(
             child: SliderTheme(
               data: SliderTheme.of(context).copyWith(
-                activeTrackColor: Colors.green,
-                inactiveTrackColor: Colors.yellow,
+                activeTrackColor: Colors.white,
+                inactiveTrackColor: Colors.grey,
                 trackShape: const RectangularSliderTrackShape(),
                 trackHeight: 2.0,
-                thumbColor: Colors.red,
-                thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 8.0,),
-                overlayColor: Colors.blue,
-                overlayShape: const RoundSliderOverlayShape(overlayRadius: 12.0),
+                thumbColor: Colors.white,
+                thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 5.0,),
+                overlayColor: Colors.transparent,
+                overlayShape: const RoundSliderOverlayShape(overlayRadius: 6.0),
               ),
               child: Slider(
                   min: 0,
@@ -342,7 +393,7 @@ class MusicViewState extends State<MusicView> with SingleTickerProviderStateMixi
                   }),
             ),
           ),
-          commonWidgets.setTextWithColor(commonWidgets.setTime(duration-position), 12, Colors.black),
+          commonWidgets.setTextWithColor(commonWidgets.setTime(duration-position), 12, Colors.white),
         ],
       ),
     );
@@ -350,7 +401,6 @@ class MusicViewState extends State<MusicView> with SingleTickerProviderStateMixi
 
   Widget buttonView() {
     return Container(
-      color: Colors.transparent,
       child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
@@ -363,20 +413,23 @@ class MusicViewState extends State<MusicView> with SingleTickerProviderStateMixi
                   currentIndex -= 1;
                 }
                 currentPlaySong = songModelList[currentIndex].displayNameWOExt;
+                currentPlaySongArtist = songModelList[currentIndex].artist!;
                 await audioPlayer.play(songModelList[currentIndex].data);
                 isAudioPlaying = true;
                 setState(() {
 
                 });
               },
-              child: commonWidgets.iconContainer(Icons.skip_previous_sharp,Colors.black,35),
+              child: commonWidgets.iconContainer(Icons.skip_previous_sharp,Colors.white,35),
             ),
             GestureDetector(
               onTap: () async{
                 if(isAudioPlaying){
                   await audioPlayer.pause();
+                  animationController.stop();
                   isAudioPlaying = false;
                 } else {
+                  animationController.repeat();
                   await audioPlayer.play(songModelList[currentIndex].data);
                   isAudioPlaying = true;
                 }
@@ -384,7 +437,7 @@ class MusicViewState extends State<MusicView> with SingleTickerProviderStateMixi
 
                 });
               },
-              child: commonWidgets.iconContainer(isAudioPlaying ? Icons.pause_sharp : Icons.play_arrow_sharp,Colors.black,35),
+              child: commonWidgets.iconContainer(isAudioPlaying ? Icons.pause_sharp : Icons.play_arrow_sharp,Colors.white,35),
             ),
             GestureDetector(
               onTap: () async {
@@ -394,13 +447,14 @@ class MusicViewState extends State<MusicView> with SingleTickerProviderStateMixi
                   currentIndex += 1;
                 }
                 currentPlaySong = songModelList[currentIndex].displayNameWOExt;
+                currentPlaySongArtist = songModelList[currentIndex].artist!;
                 await audioPlayer.play(songModelList[currentIndex].data);
                 isAudioPlaying = true;
                 setState(() {
 
                 });
               },
-              child:commonWidgets.iconContainer(Icons.skip_next_sharp,Colors.black,35),
+              child:commonWidgets.iconContainer(Icons.skip_next_sharp,Colors.white,35),
             ),
           ]
       ),

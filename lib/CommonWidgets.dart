@@ -12,7 +12,12 @@ class CommonWidgets {
   }
 
   Widget setTextWithColor(String text, double fontSize, Color color) {
-    return Text(text,style: TextStyle(color: color,fontSize: fontSize),);
+    return Text(text,style: TextStyle(color: color,fontSize: fontSize));
+  }
+
+
+  Widget setTextWithColorFOntWeight(String text, double fontSize, Color color) {
+    return Text(text,style: TextStyle(color: color,fontSize: fontSize, fontWeight: FontWeight.bold));
   }
 
   Widget iconContainer(IconData iconData,Color color,double iconSize) {

@@ -39,6 +39,7 @@ dependencies:
   permission_handler: ^10.1.0
   shared_preferences: ^2.0.15
   provider: ^6.0.4
+  text_scroll: ^0.1.1
 
 
 dev_dependencies:
@@ -96,3 +97,4 @@ flutter:
   assets:
     - assests/image.jpg
     - assests/music.png
+    - assests/music_background.png
